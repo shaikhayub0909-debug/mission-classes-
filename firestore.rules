@@ -1,0 +1,296 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && request.auth.token.email == 'shaikhayub0909@gmail.com';
+    }
+
+    function isUserOrAdmin(userId) {
+      return isSignedIn() && (request.auth.uid == userId || isSuperAdmin());
+    }
+
+    // Validation blueprints
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.email is string && data.email.size() <= 120 &&
+             data.displayName is string && data.displayName.size() <= 100 &&
+             data.role in ['SUPER_ADMIN', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT', 'ACCOUNTANT'] &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 25)) &&
+             (!('branch' in data) || (data.branch is string && data.branch.size() <= 60));
+    }
+
+    function isValidStudent(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.enrollmentNo is string && data.enrollmentNo.size() <= 50 &&
+             data.fullName is string && data.fullName.size() <= 100 &&
+             data.gradeClass is string && data.gradeClass.size() <= 50 &&
+             data.batch is string && data.batch.size() <= 50 &&
+             data.status in ['ACTIVE', 'SUSPENDED', 'ALUMNI'] &&
+             (!('guardianName' in data) || (data.guardianName is string && data.guardianName.size() <= 100)) &&
+             (!('guardianPhone' in data) || (data.guardianPhone is string && data.guardianPhone.size() <= 25));
+    }
+
+    function isValidAttendance(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.studentName is string && data.studentName.size() <= 100 &&
+             data.date is string && data.date.size() <= 15 &&
+             data.gradeClass is string && data.gradeClass.size() <= 50 &&
+             data.status in ['PRESENT', 'ABSENT', 'LATE', 'EXCUSED'] &&
+             (!('batch' in data) || (data.batch is string && data.batch.size() <= 50)) &&
+             (!('studentId' in data) || (data.studentId is string && data.studentId.size() <= 128)) &&
+             (!('remarks' in data) || (data.remarks is string && data.remarks.size() <= 200));
+    }
+
+    function isValidFee(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.studentName is string && data.studentName.size() <= 100 &&
+             data.invoiceNo is string && data.invoiceNo.size() <= 50 &&
+             data.title is string && data.title.size() <= 100 &&
+             data.amount is number && data.amount >= 0 &&
+             data.paidAmount is number && data.paidAmount >= 0 &&
+             data.status in ['PAID', 'PARTIAL', 'PENDING', 'OVERDUE'] &&
+             (!('dueDate' in data) || (data.dueDate is string && data.dueDate.size() <= 20));
+    }
+
+    function isValidExam(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.studentName is string && data.studentName.size() <= 100 &&
+             data.examTitle is string && data.examTitle.size() <= 100 &&
+             data.subject is string && data.subject.size() <= 60 &&
+             data.maxMarks is number && data.maxMarks > 0 &&
+             data.obtainedMarks is number && data.obtainedMarks >= 0 &&
+             data.grade is string && data.grade.size() <= 10 &&
+             (!('examDate' in data) || (data.examDate is string && data.examDate.size() <= 20));
+    }
+
+    function isValidAssignment(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() <= 120 &&
+             data.subject is string && data.subject.size() <= 60 &&
+             data.gradeClass is string && data.gradeClass.size() <= 50 &&
+             data.description is string && data.description.size() <= 1000 &&
+             data.dueDate is string && data.dueDate.size() <= 20 &&
+             (!('maxMarks' in data) || data.maxMarks is number);
+    }
+
+    function isValidNotice(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() <= 150 &&
+             data.content is string && data.content.size() <= 2000 &&
+             data.category in ['GENERAL', 'EXAM', 'FEES', 'HOLIDAY', 'URGENT'] &&
+             data.targetAudience in ['ALL', 'STUDENTS', 'TEACHERS', 'PARENTS'];
+    }
+
+    function isValidLearningResource(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() <= 120 &&
+             data.subject is string && data.subject.size() <= 60 &&
+             data.chapter is string && data.chapter.size() <= 80 &&
+             data.resourceType in ['NOTES', 'PDF', 'VIDEO', 'WORKSHEET'] &&
+             (!('contentSummary' in data) || (data.contentSummary is string && data.contentSummary.size() <= 1000));
+    }
+
+    function isValidLeaveRequest(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.applicantName is string && data.applicantName.size() <= 100 &&
+             data.leaveType is string && data.leaveType.size() <= 50 &&
+             data.startDate is string && data.startDate.size() <= 20 &&
+             data.endDate is string && data.endDate.size() <= 20 &&
+             data.reason is string && data.reason.size() <= 500 &&
+             data.status in ['PENDING', 'APPROVED', 'REJECTED'] &&
+             (!('role' in data) || (data.role is string && data.role.size() <= 50)) &&
+             (!('adminRemarks' in data) || (data.adminRemarks is string && data.adminRemarks.size() <= 200));
+    }
+
+    function isValidAiDraft(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() <= 120 &&
+             data.prompt is string && data.prompt.size() <= 1000 &&
+             data.generatedContent is string && data.generatedContent.size() <= 5000 &&
+             data.category in ['LESSON_PLAN', 'PRACTICE_QUESTIONS', 'ANNOUNCEMENT_DRAFT', 'SUMMARY'];
+    }
+
+    // Collections
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isUserOrAdmin(userId);
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create: if isValidId(userId) && isUserOrAdmin(userId) &&
+                       incoming().userId == userId &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidUserProfile(incoming());
+      allow update: if isValidId(userId) && isUserOrAdmin(userId) &&
+                       incoming().userId == userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidUserProfile(incoming());
+      allow delete: if isValidId(userId) && isUserOrAdmin(userId);
+    }
+
+    match /students/{studentId} {
+      allow get: if isValidId(studentId) && isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create: if isValidId(studentId) && isSignedIn() &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidStudent(incoming());
+      allow update: if isValidId(studentId) && isSignedIn() &&
+                       (existing().userId == request.auth.uid || isSuperAdmin()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidStudent(incoming());
+      allow delete: if isValidId(studentId) && isSignedIn() && (existing().userId == request.auth.uid || isSuperAdmin());
+    }
+
+    match /attendance/{attendanceId} {
+      allow get: if isValidId(attendanceId) && isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create: if isValidId(attendanceId) && isSignedIn() &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidAttendance(incoming());
+      allow update: if isValidId(attendanceId) && isSignedIn() &&
+                       (existing().userId == request.auth.uid || isSuperAdmin()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidAttendance(incoming());
+      allow delete: if isValidId(attendanceId) && isSignedIn() && (existing().userId == request.auth.uid || isSuperAdmin());
+    }
+
+    match /fees/{feeId} {
+      allow get: if isValidId(feeId) && isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create: if isValidId(feeId) && isSignedIn() &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidFee(incoming());
+      allow update: if isValidId(feeId) && isSignedIn() &&
+                       (existing().userId == request.auth.uid || isSuperAdmin()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidFee(incoming());
+      allow delete: if isValidId(feeId) && isSignedIn() && (existing().userId == request.auth.uid || isSuperAdmin());
+    }
+
+    match /exams/{examId} {
+      allow get: if isValidId(examId) && isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create: if isValidId(examId) && isSignedIn() &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidExam(incoming());
+      allow update: if isValidId(examId) && isSignedIn() &&
+                       (existing().userId == request.auth.uid || isSuperAdmin()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidExam(incoming());
+      allow delete: if isValidId(examId) && isSignedIn() && (existing().userId == request.auth.uid || isSuperAdmin());
+    }
+
+    match /assignments/{assignmentId} {
+      allow get: if isValidId(assignmentId) && isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create: if isValidId(assignmentId) && isSignedIn() &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidAssignment(incoming());
+      allow update: if isValidId(assignmentId) && isSignedIn() &&
+                       (existing().userId == request.auth.uid || isSuperAdmin()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidAssignment(incoming());
+      allow delete: if isValidId(assignmentId) && isSignedIn() && (existing().userId == request.auth.uid || isSuperAdmin());
+    }
+
+    match /notices/{noticeId} {
+      allow get: if isValidId(noticeId) && isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create: if isValidId(noticeId) && isSignedIn() &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidNotice(incoming());
+      allow update: if isValidId(noticeId) && isSignedIn() &&
+                       (existing().userId == request.auth.uid || isSuperAdmin()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidNotice(incoming());
+      allow delete: if isValidId(noticeId) && isSignedIn() && (existing().userId == request.auth.uid || isSuperAdmin());
+    }
+
+    match /learning_resources/{resourceId} {
+      allow get: if isValidId(resourceId) && isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create: if isValidId(resourceId) && isSignedIn() &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidLearningResource(incoming());
+      allow update: if isValidId(resourceId) && isSignedIn() &&
+                       (existing().userId == request.auth.uid || isSuperAdmin()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidLearningResource(incoming());
+      allow delete: if isValidId(resourceId) && isSignedIn() && (existing().userId == request.auth.uid || isSuperAdmin());
+    }
+
+    match /leave_requests/{requestId} {
+      allow get: if isValidId(requestId) && isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create: if isValidId(requestId) && isSignedIn() &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidLeaveRequest(incoming());
+      allow update: if isValidId(requestId) && isSignedIn() &&
+                       (existing().userId == request.auth.uid || isSuperAdmin()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidLeaveRequest(incoming());
+      allow delete: if isValidId(requestId) && isSignedIn() && (existing().userId == request.auth.uid || isSuperAdmin());
+    }
+
+    match /ai_drafts/{draftId} {
+      allow get: if isValidId(draftId) && isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+      allow create: if isValidId(draftId) && isSignedIn() &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidAiDraft(incoming());
+      allow update: if isValidId(draftId) && isSignedIn() &&
+                       (existing().userId == request.auth.uid || isSuperAdmin()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidAiDraft(incoming());
+      allow delete: if isValidId(draftId) && isSignedIn() && (existing().userId == request.auth.uid || isSuperAdmin());
+    }
+  }
+}

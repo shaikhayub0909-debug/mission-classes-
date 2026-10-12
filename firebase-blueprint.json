@@ -1,0 +1,216 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account profile and role information for MISSION CLASSES",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Authenticated user identifier" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User full name" },
+        "role": { "type": "string", "enum": ["SUPER_ADMIN", "ADMIN", "TEACHER", "STUDENT", "PARENT", "ACCOUNTANT"], "description": "Access control role" },
+        "phone": { "type": "string", "description": "Contact telephone number" },
+        "branch": { "type": "string", "description": "Institute branch name" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last updated timestamp via serverTimestamp" }
+      },
+      "required": ["userId", "email", "displayName", "role", "createdAt"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Student information system record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Creator or associated user ID" },
+        "enrollmentNo": { "type": "string", "description": "Unique registration number" },
+        "fullName": { "type": "string", "description": "Student full legal name" },
+        "gradeClass": { "type": "string", "description": "Class or standard (e.g. Class 10th, 12th)" },
+        "batch": { "type": "string", "description": "Batch designation" },
+        "guardianName": { "type": "string", "description": "Parent or guardian name" },
+        "guardianPhone": { "type": "string", "description": "Parent emergency contact" },
+        "status": { "type": "string", "enum": ["ACTIVE", "SUSPENDED", "ALUMNI"], "description": "Enrollment status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp" }
+      },
+      "required": ["userId", "enrollmentNo", "fullName", "gradeClass", "batch", "status", "createdAt"]
+    },
+    "AttendanceRecord": {
+      "title": "AttendanceRecord",
+      "description": "Daily student and class attendance log",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Faculty user who logged attendance or owner" },
+        "studentId": { "type": "string", "description": "Referenced student ID" },
+        "studentName": { "type": "string", "description": "Student name" },
+        "date": { "type": "string", "description": "Attendance date in YYYY-MM-DD format" },
+        "gradeClass": { "type": "string", "description": "Class name" },
+        "batch": { "type": "string", "description": "Batch name" },
+        "status": { "type": "string", "enum": ["PRESENT", "ABSENT", "LATE", "EXCUSED"], "description": "Attendance status" },
+        "remarks": { "type": "string", "description": "Optional notes or reason for absence" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["userId", "studentName", "date", "gradeClass", "status", "createdAt"]
+    },
+    "FeeInvoice": {
+      "title": "FeeInvoice",
+      "description": "Fee billing and payment tracking invoice",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Staff or student account ID" },
+        "studentName": { "type": "string", "description": "Student full name" },
+        "invoiceNo": { "type": "string", "description": "Unique invoice identifier" },
+        "title": { "type": "string", "description": "Fee description (e.g. Term 1 Tuition)" },
+        "amount": { "type": "number", "description": "Total fee amount in INR" },
+        "paidAmount": { "type": "number", "description": "Amount collected to date" },
+        "dueDate": { "type": "string", "description": "Payment due date" },
+        "status": { "type": "string", "enum": ["PAID", "PARTIAL", "PENDING", "OVERDUE"], "description": "Payment status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["userId", "studentName", "invoiceNo", "title", "amount", "paidAmount", "status", "createdAt"]
+    },
+    "ExamResult": {
+      "title": "ExamResult",
+      "description": "Student examination performance and grades",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Creator user ID" },
+        "studentName": { "type": "string", "description": "Student full name" },
+        "examTitle": { "type": "string", "description": "Examination name" },
+        "subject": { "type": "string", "description": "Academic subject" },
+        "maxMarks": { "type": "number", "description": "Maximum exam score" },
+        "obtainedMarks": { "type": "number", "description": "Score achieved" },
+        "grade": { "type": "string", "description": "Letter grade (A+, A, B, etc.)" },
+        "examDate": { "type": "string", "description": "Date of examination" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["userId", "studentName", "examTitle", "subject", "maxMarks", "obtainedMarks", "grade", "createdAt"]
+    },
+    "Assignment": {
+      "title": "Assignment",
+      "description": "LMS homework and assignment tasks",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Teacher who published assignment" },
+        "title": { "type": "string", "description": "Assignment title" },
+        "subject": { "type": "string", "description": "Subject" },
+        "gradeClass": { "type": "string", "description": "Target class" },
+        "description": { "type": "string", "description": "Instructions and guidelines" },
+        "dueDate": { "type": "string", "description": "Deadline date" },
+        "maxMarks": { "type": "number", "description": "Maximum score points" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["userId", "title", "subject", "gradeClass", "description", "dueDate", "createdAt"]
+    },
+    "Notice": {
+      "title": "Notice",
+      "description": "Institute circulars, bulletins, and announcements",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Author of announcement" },
+        "title": { "type": "string", "description": "Headline" },
+        "content": { "type": "string", "description": "Detailed announcement message" },
+        "category": { "type": "string", "enum": ["GENERAL", "EXAM", "FEES", "HOLIDAY", "URGENT"], "description": "Notice category" },
+        "targetAudience": { "type": "string", "enum": ["ALL", "STUDENTS", "TEACHERS", "PARENTS"], "description": "Target group" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["userId", "title", "content", "category", "targetAudience", "createdAt"]
+    },
+    "LearningResource": {
+      "title": "LearningResource",
+      "description": "Digital syllabus study materials and lecture notes",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Uploader user ID" },
+        "title": { "type": "string", "description": "Resource title" },
+        "subject": { "type": "string", "description": "Subject name" },
+        "chapter": { "type": "string", "description": "Chapter or unit" },
+        "resourceType": { "type": "string", "enum": ["NOTES", "PDF", "VIDEO", "WORKSHEET"], "description": "Media type" },
+        "contentSummary": { "type": "string", "description": "Key points or description" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["userId", "title", "subject", "chapter", "resourceType", "createdAt"]
+    },
+    "LeaveRequest": {
+      "title": "LeaveRequest",
+      "description": "Leave application for students and faculty",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Applicant user ID" },
+        "applicantName": { "type": "string", "description": "Applicant full name" },
+        "role": { "type": "string", "description": "Applicant role" },
+        "leaveType": { "type": "string", "description": "Sick, Personal, Casual" },
+        "startDate": { "type": "string", "description": "Start date" },
+        "endDate": { "type": "string", "description": "End date" },
+        "reason": { "type": "string", "description": "Reason for leave" },
+        "status": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED"], "description": "Review status" },
+        "adminRemarks": { "type": "string", "description": "Approver remarks" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["userId", "applicantName", "leaveType", "startDate", "endDate", "reason", "status", "createdAt"]
+    },
+    "AiDraft": {
+      "title": "AiDraft",
+      "description": "AI-generated lesson plans, quiz questions, and study helpers",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner user ID" },
+        "title": { "type": "string", "description": "Title or subject topic" },
+        "prompt": { "type": "string", "description": "User request prompt" },
+        "generatedContent": { "type": "string", "description": "AI generated lesson or question draft" },
+        "category": { "type": "string", "enum": ["LESSON_PLAN", "PRACTICE_QUESTIONS", "ANNOUNCEMENT_DRAFT", "SUMMARY"], "description": "Content category" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["userId", "title", "prompt", "generatedContent", "category", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles and role metadata"
+    },
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Student information directory"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": "AttendanceRecord",
+      "description": "Institute daily attendance entries"
+    },
+    "/fees/{feeId}": {
+      "schema": "FeeInvoice",
+      "description": "Fee invoices and payment logs"
+    },
+    "/exams/{examId}": {
+      "schema": "ExamResult",
+      "description": "Exam marks and performance cards"
+    },
+    "/assignments/{assignmentId}": {
+      "schema": "Assignment",
+      "description": "LMS homework and assignments"
+    },
+    "/notices/{noticeId}": {
+      "schema": "Notice",
+      "description": "Institute notice board announcements"
+    },
+    "/learning_resources/{resourceId}": {
+      "schema": "LearningResource",
+      "description": "Syllabus study materials and worksheets"
+    },
+    "/leave_requests/{requestId}": {
+      "schema": "LeaveRequest",
+      "description": "Leave applications and approval workflows"
+    },
+    "/ai_drafts/{draftId}": {
+      "schema": "AiDraft",
+      "description": "AI lesson plan drafts and quiz items"
+    }
+  }
+}

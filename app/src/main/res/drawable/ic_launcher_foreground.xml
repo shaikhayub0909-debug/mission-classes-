@@ -1,0 +1,38 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Star of Excellence at Top -->
+    <path
+        android:fillColor="#FBBF24"
+        android:pathData="M54,26 L55.8,31 L61,31.2 L56.8,34.2 L58.4,39 L54,36 L49.6,39 L51.2,34.2 L47,31.2 L52.2,31 Z" />
+    <!-- Mortarboard Cap Diamond -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,39 L78,48 L54,57 L30,48 Z" />
+    <!-- Mortarboard Cap Skull / Base -->
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M39,52 L39,59 C39,64 69,64 69,59 L69,52 L54,58 Z" />
+    <!-- Tassel String and Pendant -->
+    <path
+        android:strokeColor="#F59E0B"
+        android:strokeWidth="1.5"
+        android:pathData="M66,53.5 L73,59 L73,66" />
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M71.5,66 H74.5 V69 H71.5 Z" />
+    <!-- Open Book Pages (Left & Right) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,67 C48,64 36,63 28,66 L28,78 C36,75 48,76 54,79 Z" />
+    <path
+        android:fillColor="#F1F5F9"
+        android:pathData="M54,67 C60,64 72,63 80,66 L80,78 C72,75 60,76 54,79 Z" />
+    <!-- Open Book Spine & Bottom Stand -->
+    <path
+        android:strokeColor="#38BDF8"
+        android:strokeWidth="2"
+        android:pathData="M54,67 L54,81" />
+</vector>

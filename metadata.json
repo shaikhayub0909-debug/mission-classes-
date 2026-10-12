@@ -1,0 +1,6 @@
+{
+  "name": "Mission Classes",
+  "description": "Comprehensive Educational Institute Management Ecosystem for administration, teachers, students, and parents",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
